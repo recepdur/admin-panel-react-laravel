@@ -1,7 +1,12 @@
 import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
+import { Navigate } from 'react-router-dom'
+import { IsLogin, IsRefreshTokenExpire } from '../common/apiHelper'
 
 const DefaultLayout = () => {
+  if (!IsLogin() || IsRefreshTokenExpire()) {
+    return <Navigate from="/" to="/login" />
+  }
   return (
     <div>
       <AppSidebar />

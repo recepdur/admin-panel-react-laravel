@@ -12,6 +12,8 @@ import {
   cilPuzzle,
   cilSpeedometer,
   cilStar,
+  cilPeople,
+  cilLockLocked,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -21,11 +23,59 @@ const _nav = [
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
   },
+  {
+    component: CNavItem,
+    name: 'Müşteri',
+    to: '/customer',
+    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+    // badge: {
+    //   color: 'info',
+    //   text: 'YENİ',
+    // },
+  },
+  {
+    component: CNavItem,
+    name: 'Çıkış',
+    to: '/logout',
+    icon: <CIcon icon={cilLockLocked} customClassName="nav-icon" />,
+  },
+  // {
+  //   _tag: "CSidebarNavItem",
+  //   name: "Müşteri",
+  //   to: "/customers",
+  //   icon: "cil-people",
+  // },
+  // {
+  //   _tag: "CSidebarNavItem",
+  //   name: "Sigorta",
+  //   to: "/insurances",
+  //   icon: "cil-euro",
+  // },
+  // // {
+  // //   _tag: "CSidebarNavItem",
+  // //   name: "Hesap",
+  // //   to: "/accounts",
+  // //   icon: "cil-calculator",
+  // // },
+  // {
+  //   _tag: "CSidebarNavItem",
+  //   name: "Ayarlar",
+  //   to: "/settings",
+  //   icon: "cil-settings",
+  // },
+  // {
+  //   _tag: "CSidebarNavItem",
+  //   name: "Admin",
+  //   to: "/admin",
+  //   icon: "cil-settings",
+  // },
+  // {
+  //   _tag: "CSidebarNavItem",
+  //   name: "Çıkış",
+  //   to: "/logout",
+  //   icon: "cil-lock-locked",
+  // },
   {
     component: CNavTitle,
     name: 'Theme',
