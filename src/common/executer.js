@@ -21,11 +21,11 @@ export function CallApi(urlPath, method, data, isPublic) {
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + token.accessToken
 
     axios.get('/sanctum/csrf-cookie').then((responseCSRF) => {
-      console.log(responseCSRF)
+      //console.log(responseCSRF)
       axios
         .post(urlPath, data)
         .then((response) => {
-          console.log(response)
+          //console.log(response)
           const apiResponseresult = {
             HTTPStatus: true,
             HTTPStatusCode: response.status,
@@ -66,7 +66,7 @@ async function getToken(isPublic) {
   if (
     GetMinutesBetweenTwoDates(new Date(tokenCreatedTime), new Date()) < ACCESS_TOKEN_EXPIRED_MINUTE
   ) {
-    console.log('return token ' + JSON.stringify(token))
+    //console.log('return token ' + JSON.stringify(token))
     return token
   } else {
     await axios({
