@@ -1,6 +1,6 @@
 export class CustomerService {
   getCustomersLarge() {
-    return fetch('assests/demo/data/customers-large.json')
+    return fetch('assests/demo/data/customer.json')
       .then((res) => res.json())
       .then((d) => d.data)
   }

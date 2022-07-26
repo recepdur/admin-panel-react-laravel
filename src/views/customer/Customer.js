@@ -13,7 +13,7 @@ import { InputText } from 'primereact/inputtext'
 import { InputNumber } from 'primereact/inputnumber'
 import { Button } from 'primereact/button'
 import { Calendar } from 'primereact/calendar'
-//import { CustomerService } from './CustomerService'
+import { CustomerService } from './CustomerService'
 import './DataTableDemo.css'
 import { execute } from '../../common/basePage'
 import { Menubar } from 'primereact/menubar'
@@ -22,6 +22,7 @@ import { Toast } from 'primereact/toast'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { RadioButton } from 'primereact/radiobutton'
 import { Dialog } from 'primereact/dialog'
+import { InputMask } from 'primereact/inputmask'
 
 const Customer = () => {
   let emptyCustomer = {
@@ -46,14 +47,14 @@ const Customer = () => {
   // const [globalFilter, setGlobalFilter] = useState(null)
   const toast = useRef(null)
   // const dt = useRef(null)
-  // const customerService = new CustomerService()
+  const customerService = new CustomerService()
 
   useEffect(() => {
-    // customerService.getCustomersLarge().then((data) => {
-    //   setCustomers(getCustomers(data))
-    //   setLoading(false)
-    // })
-    getCustomerList(true)
+    customerService.getCustomersLarge().then((data) => {
+      setCustomers(getCustomers(data))
+      setLoading(false)
+    })
+    //getCustomerList(true)
     initFilters()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -437,8 +438,8 @@ const Customer = () => {
 
   const customerDialogFooter = (
     <React.Fragment>
-      <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
-      <Button label="Save" icon="pi pi-check" className="p-button-text" onClick={saveCustomer} />
+      <Button label="İptal" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
+      <Button label="Kaydet" icon="pi pi-check" className="p-button-text" onClick={saveCustomer} />
     </React.Fragment>
   )
 
@@ -534,115 +535,65 @@ const Customer = () => {
 
       <Dialog
         visible={customerDialog}
-        style={{ width: '450px' }}
-        header="Customer Details"
+        style={{ width: '500px' }}
+        header="Müşteri Detayı"
         modal
         className="p-fluid"
         footer={customerDialogFooter}
         onHide={hideDialog}
       >
-        {customer.image && (
-          <img
-            src={`images/customer/${customer.image}`}
-            onError={(e) =>
-              (e.target.src =
-                'https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png')
-            }
-            alt={customer.image}
-            className="customer-image block m-auto pb-3"
-          />
-        )}
-        <div className="field">
-          <label htmlFor="name">Name</label>
-          <InputText
-            id="name"
-            value={customer.name}
-            onChange={(e) => onInputChange(e, 'name')}
-            required
-            autoFocus
-            className={classNames({ 'p-invalid': submitted && !customer.name })}
-          />
-          {submitted && !customer.name && <small className="p-error">Name is required.</small>}
-        </div>
-        <div className="field">
-          <label htmlFor="description">Description</label>
-          <InputTextarea
-            id="description"
-            value={customer.description}
-            onChange={(e) => onInputChange(e, 'description')}
-            required
-            rows={3}
-            cols={20}
-          />
-        </div>
-
-        <div className="field">
-          <label className="mb-3">Category</label>
-          <div className="formgrid grid">
-            <div className="field-radiobutton col-6">
-              <RadioButton
-                inputId="category1"
-                name="category"
-                value="Accessories"
-                onChange={onCategoryChange}
-                checked={customer.category === 'Accessories'}
-              />
-              <label htmlFor="category1">Accessories</label>
-            </div>
-            <div className="field-radiobutton col-6">
-              <RadioButton
-                inputId="category2"
-                name="category"
-                value="Clothing"
-                onChange={onCategoryChange}
-                checked={customer.category === 'Clothing'}
-              />
-              <label htmlFor="category2">Clothing</label>
-            </div>
-            <div className="field-radiobutton col-6">
-              <RadioButton
-                inputId="category3"
-                name="category"
-                value="Electronics"
-                onChange={onCategoryChange}
-                checked={customer.category === 'Electronics'}
-              />
-              <label htmlFor="category3">Electronics</label>
-            </div>
-            <div className="field-radiobutton col-6">
-              <RadioButton
-                inputId="category4"
-                name="category"
-                value="Fitness"
-                onChange={onCategoryChange}
-                checked={customer.category === 'Fitness'}
-              />
-              <label htmlFor="category4">Fitness</label>
-            </div>
-          </div>
-        </div>
-
         <div className="formgrid grid">
           <div className="field col">
-            <label htmlFor="price">Price</label>
-            <InputNumber
-              id="price"
-              value={customer.price}
-              onValueChange={(e) => onInputNumberChange(e, 'price')}
-              mode="currency"
-              currency="USD"
-              locale="en-US"
+            <label htmlFor="first_name">Adı</label>
+            <InputText
+              id="name"
+              value={customer.first_name}
+              onChange={(e) => onInputChange(e, 'first_name')}
+              required
+              autoFocus
+              className={classNames({ 'p-invalid': submitted && !customer.first_name })}
+            />
+            {submitted && !customer.first_name && <small className="p-error">Zorunlu alan</small>}
+          </div>
+          <div className="field col">
+            <label htmlFor="last_name">Soyadı</label>
+            <InputText
+              id="name"
+              value={customer.last_name}
+              onChange={(e) => onInputChange(e, 'last_name')}
+              autoFocus
+            />
+          </div>
+        </div>
+        <div className="formgrid grid">
+          <div className="field col">
+            <label htmlFor="phone">Telefon</label>
+            <InputMask
+              id="phone"
+              mask="(999) 999-9999"
+              value={customer.phone}
+              //placeholder="(999) 999-9999"
+              onValueChange={(e) => onInputChange(e, 'phone')}
             />
           </div>
           <div className="field col">
-            <label htmlFor="quantity">Quantity</label>
-            <InputNumber
-              id="quantity"
-              value={customer.quantity}
-              onValueChange={(e) => onInputNumberChange(e, 'quantity')}
-              integeronly
+            <label htmlFor="quantity">TC No</label>
+            <InputMask
+              id="tc_no"
+              mask="9999999999999"
+              value={customer.tc_no}
+              //placeholder="9999999999999"
+              onValueChange={(e) => onInputChange(e, 'tc_no')}
             />
           </div>
+        </div>
+        <div className="field">
+          <label htmlFor="email">E-Posta</label>
+          <InputText
+            id="email"
+            value={customer.email}
+            onChange={(e) => onInputChange(e, 'email')}
+          />
         </div>
       </Dialog>
 

@@ -48,19 +48,23 @@ const Login = () => {
   const loginClick = (event) => {
     setIsOpenProgress(true)
     setErrorText('')
-    let data = { email: email, password: password }
-    execute('/api/login', 'POST', data, true, (response) => {
-      if (response.success) {
-        loginUser(response.data)
-        window.location.href = '/'
-      } else {
-        //setPassword('')
-        setErrorText(response.message)
-        setAlertVisible(3)
-        console.log(response)
-      }
-      setIsOpenProgress(false)
-    })
+
+    loginUser({ access_token: 'xtokenx' })
+    window.location.href = '/'
+
+    // let data = { email: email, password: password }
+    // execute('/api/login', 'POST', data, true, (response) => {
+    //   if (response.success) {
+    //     loginUser(response.data)
+    //     window.location.href = '/'
+    //   } else {
+    //     //setPassword('')
+    //     setErrorText(response.message)
+    //     setAlertVisible(3)
+    //     console.log(response)
+    //   }
+    //   setIsOpenProgress(false)
+    // })
   }
 
   return (
