@@ -27,13 +27,11 @@ import { InputMask } from 'primereact/inputmask'
 const Customer = () => {
   let emptyCustomer = {
     id: null,
-    name: '',
-    image: null,
-    description: '',
-    category: null,
-    price: 0,
-    quantity: 0,
-    rating: 0,
+    first_name: null,
+    last_name: null,
+    phone: null,
+    tc_no: null,
+    email: null,
   }
   const [customers, setCustomers] = useState(null)
   const [customerDialog, setCustomerDialog] = useState(false)
@@ -48,50 +46,6 @@ const Customer = () => {
   const toast = useRef(null)
   // const dt = useRef(null)
   const customerService = new CustomerService()
-
-  useEffect(() => {
-    customerService.getCustomersLarge().then((data) => {
-      setCustomers(getCustomers(data))
-      setLoading(false)
-    })
-    //getCustomerList(true)
-    initFilters()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const initFilters = () => {
-    setFilters({
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      first_name: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-      },
-      last_name: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-      },
-      phone: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-      },
-      tc_no: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-      },
-      // name: {
-      //   operator: FilterOperator.AND,
-      //   constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-      // },
-      // date: {
-      //   operator: FilterOperator.AND,
-      //   constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-      // },
-      // balance: {
-      //   operator: FilterOperator.AND,
-      //   constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-      // },
-    })
-    setGlobalFilterValue('')
-  }
 
   const menuItems = [
     {
@@ -183,6 +137,50 @@ const Customer = () => {
     },
   ]
 
+  useEffect(() => {
+    // customerService.getCustomersLarge().then((data) => {
+    //   setCustomers(getCustomers(data))
+    //   setLoading(false)
+    // })
+    getCustomerList(true)
+    initFilters()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const initFilters = () => {
+    setFilters({
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      first_name: {
+        operator: FilterOperator.AND,
+        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+      },
+      last_name: {
+        operator: FilterOperator.AND,
+        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+      },
+      phone: {
+        operator: FilterOperator.AND,
+        constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+      },
+      tc_no: {
+        operator: FilterOperator.AND,
+        constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+      },
+      // name: {
+      //   operator: FilterOperator.AND,
+      //   constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+      // },
+      // date: {
+      //   operator: FilterOperator.AND,
+      //   constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+      // },
+      // balance: {
+      //   operator: FilterOperator.AND,
+      //   constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+      // },
+    })
+    setGlobalFilterValue('')
+  }
+
   const getCustomers = (data) => {
     return [...(data || [])].map((d) => {
       d.date = new Date(d.date)
@@ -195,7 +193,7 @@ const Customer = () => {
     const cusData = {
       methodName: 'SelectByColumns',
       data: {
-        userId: localStorage.getItem('loginUserId'),
+        //userId: localStorage.getItem('loginUserId'),
         isActive: isAct,
       },
     }
@@ -312,46 +310,67 @@ const Customer = () => {
     return index
   }
 
-  const createId = () => {
-    let id = ''
-    let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    for (let i = 0; i < 5; i++) {
-      id += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return id
-  }
-
   const saveCustomer = () => {
     setSubmitted(true)
 
-    if (customer.name.trim()) {
+    if (customer.first_name.trim()) {
       let _customers = [...customers]
       let _customer = { ...customer }
-      if (customer.id) {
-        const index = findIndexById(customer.id)
 
-        _customers[index] = _customer
-        toast.current.show({
-          severity: 'success',
-          summary: 'Successful',
-          detail: 'Customer Updated',
-          life: 3000,
+      if (customer.id) {
+        const cusData = {
+          methodName: 'Update',
+          data: _customer,
+        }
+        execute('/api/customers', 'POST', cusData, false, (response) => {
+          if (response.success) {
+            const index = findIndexById(customer.id)
+            _customers[index] = _customer
+            toast.current.show({
+              severity: 'success',
+              summary: 'Başarılı',
+              detail: 'Müşteri Güncellendi',
+              life: 3000,
+            })
+            setCustomers(_customers)
+            setCustomerDialog(false)
+            setCustomer(emptyCustomer)
+          } else {
+            toast.current.show({
+              severity: 'error',
+              summary: 'Hata',
+              detail: response.message,
+              life: 5000,
+            })
+          }
         })
       } else {
-        _customer.id = createId()
-        _customer.image = 'customer-placeholder.svg'
-        _customers.push(_customer)
-        toast.current.show({
-          severity: 'success',
-          summary: 'Successful',
-          detail: 'Customer Created',
-          life: 3000,
+        const cusData = {
+          methodName: 'Insert',
+          data: _customer,
+        }
+        execute('/api/customers', 'POST', cusData, false, (response) => {
+          if (response.success) {
+            _customers.push(response.data)
+            toast.current.show({
+              severity: 'success',
+              summary: 'Başarılı',
+              detail: 'Müşteri Eklendi',
+              life: 3000,
+            })
+            setCustomers(_customers)
+            setCustomerDialog(false)
+            setCustomer(emptyCustomer)
+          } else {
+            toast.current.show({
+              severity: 'error',
+              summary: 'Hata',
+              detail: response.message,
+              life: 5000,
+            })
+          }
         })
       }
-
-      setCustomers(_customers)
-      setCustomerDialog(false)
-      setCustomer(emptyCustomer)
     }
   }
 
@@ -387,12 +406,6 @@ const Customer = () => {
     setCustomerDialog(true)
   }
 
-  const onCategoryChange = (e) => {
-    let _customer = { ...customer }
-    _customer['category'] = e.value
-    setCustomer(_customer)
-  }
-
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || ''
     let _customer = { ...customer }
@@ -424,15 +437,30 @@ const Customer = () => {
   }
 
   const deleteSelectedCustomers = () => {
-    let _customers = customers.filter((cusItem) => cusItem.id !== selectedCustomers.id)
-    setCustomers(_customers)
-    setDeleteCustomersDialog(false)
-    setSelectedCustomers(null)
-    toast.current.show({
-      severity: 'success',
-      summary: 'Başarılı',
-      detail: 'Kayıt silindi.',
-      life: 3000,
+    const cusData = {
+      methodName: 'Delete',
+      data: { id: selectedCustomers.id },
+    }
+    execute('/api/customers', 'POST', cusData, false, (response) => {
+      if (response.success) {
+        let _customers = customers.filter((cusItem) => cusItem.id !== selectedCustomers.id)
+        setCustomers(_customers)
+        setDeleteCustomersDialog(false)
+        setSelectedCustomers(null)
+        toast.current.show({
+          severity: 'success',
+          summary: 'Başarılı',
+          detail: 'Müşteri Silindi',
+          life: 3000,
+        })
+      } else {
+        toast.current.show({
+          severity: 'error',
+          summary: 'Hata',
+          detail: response.message,
+          life: 5000,
+        })
+      }
     })
   }
 
@@ -474,6 +502,8 @@ const Customer = () => {
           dataKey="id"
           filters={filters}
           filterDisplay="menu"
+          sortField="first_name"
+          sortOrder={1}
           loading={loading}
           responsiveLayout="scroll"
           globalFilterFields={['first_name', 'last_name', 'phone', 'tc_no']}
@@ -488,6 +518,7 @@ const Customer = () => {
             field="first_name"
             header="Adı"
             filter
+            sortable
             filterPlaceholder="Ara"
             style={{ minWidth: '12rem' }}
           />
@@ -495,13 +526,7 @@ const Customer = () => {
             field="last_name"
             header="Soyadı"
             filter
-            filterPlaceholder="Ara"
-            style={{ minWidth: '12rem' }}
-          />
-          <Column
-            field="phone"
-            header="Telefon"
-            filter
+            sortable
             filterPlaceholder="Ara"
             style={{ minWidth: '12rem' }}
           />
@@ -509,8 +534,25 @@ const Customer = () => {
             field="tc_no"
             header="TC"
             filter
+            sortable
             filterPlaceholder="Ara"
             style={{ minWidth: '12rem' }}
+          />
+          <Column
+            field="phone"
+            header="Telefon"
+            filter
+            sortable
+            filterPlaceholder="Ara"
+            style={{ minWidth: '12rem' }}
+          />
+          <Column
+            field="email"
+            header="Email"
+            filter
+            sortable
+            filterPlaceholder="Ara"
+            style={{ minWidth: '15rem' }}
           />
           <Column
             header="Kayıt Tarihi"
@@ -518,6 +560,7 @@ const Customer = () => {
             dataType="date"
             style={{ minWidth: '12rem' }}
             body={dateBodyTemplate}
+            sortable
             // filter
             // filterElement={dateFilterTemplate}
           />
@@ -570,10 +613,10 @@ const Customer = () => {
             <label htmlFor="phone">Telefon</label>
             <InputMask
               id="phone"
-              mask="(999) 999-9999"
+              mask="9999999999"
               value={customer.phone}
               //placeholder="(999) 999-9999"
-              onValueChange={(e) => onInputChange(e, 'phone')}
+              onChange={(e) => onInputChange(e, 'phone')}
             />
           </div>
           <div className="field col">
@@ -583,7 +626,7 @@ const Customer = () => {
               mask="9999999999999"
               value={customer.tc_no}
               //placeholder="9999999999999"
-              onValueChange={(e) => onInputChange(e, 'tc_no')}
+              onChange={(e) => onInputChange(e, 'tc_no')}
             />
           </div>
         </div>
