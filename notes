@@ -1,0 +1,7 @@
+heroku deployu için;
+
+Procfile oluştur: web: node server.js
+
+server.js oluştur: 
+
+heroku -> settings -> Config Vars: NPM_CONFIG_PRODUCTION = false
