@@ -1,7 +1,10 @@
-heroku deployu için;
-
+heroku deployu;
 Procfile oluştur: web: node server.js
-
-server.js oluştur: 
-
+server.js oluştur:
 heroku -> settings -> Config Vars: NPM_CONFIG_PRODUCTION = false
+
+
+netlify deployu;
+Continuous Deployment > Build settings > Edit settings
+Build command: CI= npm run build
+https://rcp-react-admin-panel.netlify.app
