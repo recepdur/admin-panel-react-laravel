@@ -3,135 +3,95 @@ import 'primereact/resources/themes/lara-light-indigo/theme.css'
 import 'primereact/resources/primereact.css'
 import 'primeflex/primeflex.css'
 import './index.css'
-// import ReactDOM from 'react-dom'
-
+import './DataTableDemo.css'
 import React, { useState, useEffect, useRef } from 'react'
+import { CCard, CCardHeader, CCardBody, CRow, CCol } from '@coreui/react'
 import { FilterMatchMode, FilterOperator } from 'primereact/api'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { InputText } from 'primereact/inputtext'
 import { InputNumber } from 'primereact/inputnumber'
 import { Button } from 'primereact/button'
-import { Calendar } from 'primereact/calendar'
 import { CustomerService } from './CustomerService'
-import './DataTableDemo.css'
 import { execute } from '../../common/basePage'
 import { Menubar } from 'primereact/menubar'
 import { classNames } from 'primereact/utils'
 import { Toast } from 'primereact/toast'
-import { InputTextarea } from 'primereact/inputtextarea'
-import { RadioButton } from 'primereact/radiobutton'
 import { Dialog } from 'primereact/dialog'
 import { InputMask } from 'primereact/inputmask'
+import { Dropdown } from 'primereact/dropdown'
 
 const Customer = () => {
   let emptyCustomer = {
     id: null,
-    first_name: null,
-    last_name: null,
+    first_name: '',
+    last_name: '',
     phone: null,
     tc_no: null,
-    email: null,
+    email: '',
+    status: true,
   }
   const [customers, setCustomers] = useState(null)
+  const [customer, setCustomer] = useState(emptyCustomer)
+  const [filterCutomer, setFilterCustomer] = useState(emptyCustomer)
   const [customerDialog, setCustomerDialog] = useState(false)
   const [filters, setFilters] = useState(null)
   const [globalFilterValue, setGlobalFilterValue] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [deleteCustomersDialog, setDeleteCustomersDialog] = useState(false)
-  const [customer, setCustomer] = useState(emptyCustomer)
   const [selectedCustomers, setSelectedCustomers] = useState(null)
   const [submitted, setSubmitted] = useState(false)
-  // const [globalFilter, setGlobalFilter] = useState(null)
   const toast = useRef(null)
-  // const dt = useRef(null)
   const customerService = new CustomerService()
 
   const menuItems = [
     {
-      label: 'Müşteri',
-      icon: 'pi pi-fw pi-file',
-      items: [
-        {
-          label: 'Yeni',
-          icon: 'pi pi-fw pi-plus',
-          command: (event) => {
-            openNew()
-          },
-        },
-        {
-          label: 'Güncelle',
-          icon: 'pi pi-fw pi-pencil',
-          command: (event) => {
-            editCustomer()
-          },
-        },
-        {
-          separator: true,
-        },
-        {
-          label: 'Sil',
-          icon: 'pi pi-fw pi-trash',
-          command: (event) => {
-            confirmDeleteSelected()
-          },
-          //disabled: !selectedCustomers || !selectedCustomers.length,
-        },
-      ],
+      label: 'Listele',
+      icon: 'pi pi-fw pi-list',
+      command: (event) => {
+        listCustomers()
+      },
     },
     {
-      label: 'Sigorta',
+      label: 'Temizle',
+      icon: 'pi pi-fw pi-file',
+      command: (event) => {
+        clearFilter()
+      },
+    },
+    {
+      label: 'Yeni',
+      icon: 'pi pi-fw pi-plus',
+      command: (event) => {
+        openNew()
+      },
+    },
+    {
+      label: 'Güncelle',
       icon: 'pi pi-fw pi-pencil',
-      items: [
-        {
-          label: 'Left',
-          icon: 'pi pi-fw pi-align-left',
-        },
-        {
-          label: 'Right',
-          icon: 'pi pi-fw pi-align-right',
-        },
-        {
-          label: 'Center',
-          icon: 'pi pi-fw pi-align-center',
-        },
-        {
-          label: 'Justify',
-          icon: 'pi pi-fw pi-align-justify',
-        },
-      ],
+      command: (event) => {
+        editCustomer()
+      },
+    },
+    {
+      label: 'Sil',
+      icon: 'pi pi-fw pi-trash',
+      command: (event) => {
+        confirmDeleteSelected()
+      },
+      //disabled: !selectedCustomers || !selectedCustomers.length,
     },
     {
       label: 'Hesap',
       icon: 'pi pi-fw pi-calendar',
       items: [
         {
-          label: 'New',
-          icon: 'pi pi-fw pi-user-plus',
+          label: 'Ekle',
+          icon: 'pi pi-fw pi-credit-card',
         },
         {
-          label: 'Delete',
-          icon: 'pi pi-fw pi-user-minus',
-        },
-        {
-          label: 'Search',
-          icon: 'pi pi-fw pi-users',
-          items: [
-            {
-              label: 'Filter',
-              icon: 'pi pi-fw pi-filter',
-              items: [
-                {
-                  label: 'Print',
-                  icon: 'pi pi-fw pi-print',
-                },
-              ],
-            },
-            {
-              icon: 'pi pi-fw pi-bars',
-              label: 'List',
-            },
-          ],
+          label: 'Listele',
+          icon: 'pi pi-fw pi-history',
         },
       ],
     },
@@ -142,7 +102,7 @@ const Customer = () => {
     //   setCustomers(getCustomers(data))
     //   setLoading(false)
     // })
-    getCustomerList(true)
+    // getCustomerList(true)
     initFilters()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -181,6 +141,13 @@ const Customer = () => {
     setGlobalFilterValue('')
   }
 
+  const clearFilter = () => {
+    initFilters()
+    setCustomer(emptyCustomer)
+    setFilterCustomer(emptyCustomer)
+    setCustomers(null)
+  }
+
   const getCustomers = (data) => {
     return [...(data || [])].map((d) => {
       d.date = new Date(d.date)
@@ -188,14 +155,11 @@ const Customer = () => {
     })
   }
 
-  const getCustomerList = async (isAct) => {
+  const listCustomers = () => {
     setLoading(true)
     const cusData = {
       methodName: 'SelectByColumns',
-      data: {
-        //userId: localStorage.getItem('loginUserId'),
-        isActive: isAct,
-      },
+      data: filterCutomer,
     }
     execute('/api/customers', 'POST', cusData, false, (response) => {
       if (response.success) {
@@ -218,10 +182,6 @@ const Customer = () => {
 
   const formatCurrency = (value) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-  }
-
-  const clearFilter = () => {
-    initFilters()
   }
 
   const onGlobalFilterChange = (e) => {
@@ -259,34 +219,6 @@ const Customer = () => {
 
   const dateBodyTemplate = (rowData) => {
     return formatDate(rowData.created_at)
-  }
-
-  const dateFilterTemplate = (options) => {
-    return (
-      <Calendar
-        value={options.value}
-        onChange={(e) => options.filterCallback(e.value, options.index)}
-        dateFormat="mm/dd/yy"
-        placeholder="mm/dd/yyyy"
-        mask="99/99/9999"
-      />
-    )
-  }
-
-  const balanceBodyTemplate = (rowData) => {
-    return formatCurrency(rowData.balance)
-  }
-
-  const balanceFilterTemplate = (options) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onChange={(e) => options.filterCallback(e.value, options.index)}
-        mode="currency"
-        currency="USD"
-        locale="en-US"
-      />
-    )
   }
 
   const hideDialog = () => {
@@ -414,12 +346,11 @@ const Customer = () => {
     setCustomer(_customer)
   }
 
-  const onInputNumberChange = (e, name) => {
-    const val = e.value || 0
-    let _customer = { ...customer }
-    _customer[`${name}`] = val
-
-    setCustomer(_customer)
+  const onFilterInputChange = (e, name) => {
+    //const val = (e.target && e.target.value) || ''
+    let _filterCustomer = { ...filterCutomer }
+    _filterCustomer[`${name}`] = e.target.value
+    setFilterCustomer(_filterCustomer)
   }
 
   const confirmDeleteSelected = () => {
@@ -488,83 +419,151 @@ const Customer = () => {
     </React.Fragment>
   )
 
+  const statusList = [
+    //{ name: 'Hepsi', value: null },
+    { name: 'Aktif', value: true },
+    { name: 'Pasif', value: false },
+  ]
+
   return (
-    <div className="datatable-filter-demo">
-      <Toast ref={toast} />
-      <div className="card">
-        <Menubar model={menuItems} />
-        <DataTable
-          value={customers}
-          paginator
-          className="p-datatable-customers"
-          //showGridlines
-          rows={20}
-          dataKey="id"
-          filters={filters}
-          filterDisplay="menu"
-          sortField="first_name"
-          sortOrder={1}
-          loading={loading}
-          responsiveLayout="scroll"
-          globalFilterFields={['first_name', 'last_name', 'phone', 'tc_no']}
-          header={header}
-          emptyMessage="Kayıt bulunamadı!"
-          size="small"
-          selection={selectedCustomers}
-          onSelectionChange={(e) => setSelectedCustomers(e.value)}
-        >
-          <Column selectionMode="single" headerStyle={{ width: '3em' }}></Column>
-          <Column
-            field="first_name"
-            header="Adı"
-            filter
-            sortable
-            filterPlaceholder="Ara"
-            style={{ minWidth: '12rem' }}
-          />
-          <Column
-            field="last_name"
-            header="Soyadı"
-            filter
-            sortable
-            filterPlaceholder="Ara"
-            style={{ minWidth: '12rem' }}
-          />
-          <Column
-            field="tc_no"
-            header="TC"
-            filter
-            sortable
-            filterPlaceholder="Ara"
-            style={{ minWidth: '12rem' }}
-          />
-          <Column
-            field="phone"
-            header="Telefon"
-            filter
-            sortable
-            filterPlaceholder="Ara"
-            style={{ minWidth: '12rem' }}
-          />
-          <Column
-            field="email"
-            header="Email"
-            filter
-            sortable
-            filterPlaceholder="Ara"
-            style={{ minWidth: '15rem' }}
-          />
-          <Column
-            header="Kayıt Tarihi"
-            filterField="created_at"
-            dataType="date"
-            style={{ minWidth: '12rem' }}
-            body={dateBodyTemplate}
-            sortable
-            // filter
-            // filterElement={dateFilterTemplate}
-          />
-          {/* <Column
+    <>
+      <CRow>
+        <CCol>
+          <Menubar model={menuItems} />
+        </CCol>
+      </CRow>
+      <CRow>
+        <CCol sm={2} md={2}>
+          <CCard className="mb-4">
+            <CCardHeader>
+              <strong>Kriterler</strong>
+            </CCardHeader>
+            <CCardBody>
+              <div className="field">
+                <Dropdown
+                  value={filterCutomer.status}
+                  options={statusList}
+                  onChange={(e) => onFilterInputChange(e, 'status')}
+                  className="p-dropdown-sm w-100"
+                  optionLabel="name"
+                  placeholder="Durum"
+                />
+              </div>
+              <div className="field">
+                <InputText
+                  id="first_name"
+                  placeholder="Adı"
+                  className="p-inputtext-sm w-100"
+                  value={filterCutomer.first_name}
+                  onChange={(e) => onFilterInputChange(e, 'first_name')}
+                />
+              </div>
+              <div className="field">
+                <InputText
+                  id="last_name"
+                  placeholder="Soyadı"
+                  className="p-inputtext-sm w-100"
+                  value={filterCutomer.last_name}
+                  onChange={(e) => onFilterInputChange(e, 'last_name')}
+                />
+              </div>
+              <div className="field">
+                <InputNumber
+                  id="phone"
+                  placeholder="Telefon"
+                  className="p-inputtext-sm w-100"
+                  value={filterCutomer.phone}
+                  mode="decimal"
+                  onValueChange={(e) => onFilterInputChange(e, 'phone')}
+                />
+              </div>
+              <div className="field">
+                <InputNumber
+                  id="tc_no"
+                  placeholder="TC"
+                  className="p-inputtext-sm w-100"
+                  value={filterCutomer.tc_no}
+                  mode="decimal"
+                  onValueChange={(e) => onFilterInputChange(e, 'tc_no')}
+                />
+              </div>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol sm={10} md={10}>
+          <Toast ref={toast} />
+          <DataTable
+            value={customers}
+            paginator
+            className="p-datatable-customers"
+            //showGridlines
+            rows={20}
+            dataKey="id"
+            filters={filters}
+            filterDisplay="menu"
+            // sortField="first_name"
+            // sortOrder={1}
+            loading={loading}
+            responsiveLayout="scroll"
+            globalFilterFields={['first_name', 'last_name', 'phone', 'tc_no']}
+            //header={header}
+            emptyMessage="Kayıt bulunamadı!"
+            size="small"
+            selection={selectedCustomers}
+            onSelectionChange={(e) => setSelectedCustomers(e.value)}
+          >
+            <Column selectionMode="single" headerStyle={{ width: '3em' }}></Column>
+            <Column
+              field="first_name"
+              header="Adı"
+              filter
+              sortable
+              filterPlaceholder="Ara"
+              style={{ minWidth: '12rem' }}
+            />
+            <Column
+              field="last_name"
+              header="Soyadı"
+              filter
+              sortable
+              filterPlaceholder="Ara"
+              style={{ minWidth: '12rem' }}
+            />
+            <Column
+              field="tc_no"
+              header="TC"
+              filter
+              sortable
+              filterPlaceholder="Ara"
+              style={{ minWidth: '12rem' }}
+            />
+            <Column
+              field="phone"
+              header="Telefon"
+              filter
+              sortable
+              filterPlaceholder="Ara"
+              style={{ minWidth: '12rem' }}
+            />
+            <Column
+              field="email"
+              header="Email"
+              filter
+              sortable
+              filterPlaceholder="Ara"
+              style={{ minWidth: '15rem' }}
+            />
+            <Column
+              header="Kayıt Tarihi"
+              filterField="created_at"
+              dataType="date"
+              style={{ minWidth: '12rem' }}
+              body={dateBodyTemplate}
+              sortable
+              // filter
+              // filterElement={dateFilterTemplate}
+            />
+            {/* <Column
             header="Balance"
             filterField="balance"
             dataType="numeric"
@@ -573,87 +572,89 @@ const Customer = () => {
             filter
             filterElement={balanceFilterTemplate}
           /> */}
-        </DataTable>
-      </div>
+          </DataTable>
+          <Dialog
+            visible={customerDialog}
+            style={{ width: '500px' }}
+            header="Müşteri Detayı"
+            modal
+            className="p-fluid"
+            footer={customerDialogFooter}
+            onHide={hideDialog}
+          >
+            <div className="formgrid grid">
+              <div className="field col">
+                <label htmlFor="first_name">Adı</label>
+                <InputText
+                  id="first_name"
+                  value={customer.first_name}
+                  onChange={(e) => onInputChange(e, 'first_name')}
+                  required
+                  autoFocus
+                  className={classNames({ 'p-invalid': submitted && !customer.first_name })}
+                />
+                {submitted && !customer.first_name && (
+                  <small className="p-error">Zorunlu alan</small>
+                )}
+              </div>
+              <div className="field col">
+                <label htmlFor="last_name">Soyadı</label>
+                <InputText
+                  id="last_name"
+                  value={customer.last_name}
+                  onChange={(e) => onInputChange(e, 'last_name')}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="formgrid grid">
+              <div className="field col">
+                <label htmlFor="phone">Telefon</label>
+                <InputMask
+                  id="phone"
+                  mask="9999999999"
+                  value={customer.phone}
+                  //placeholder="(999) 999-9999"
+                  onChange={(e) => onInputChange(e, 'phone')}
+                />
+              </div>
+              <div className="field col">
+                <label htmlFor="quantity">TC No</label>
+                <InputMask
+                  id="tc_no"
+                  mask="9999999999999"
+                  value={customer.tc_no}
+                  //placeholder="9999999999999"
+                  onChange={(e) => onInputChange(e, 'tc_no')}
+                />
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="email">E-Posta</label>
+              <InputText
+                id="email"
+                value={customer.email}
+                onChange={(e) => onInputChange(e, 'email')}
+              />
+            </div>
+          </Dialog>
 
-      <Dialog
-        visible={customerDialog}
-        style={{ width: '500px' }}
-        header="Müşteri Detayı"
-        modal
-        className="p-fluid"
-        footer={customerDialogFooter}
-        onHide={hideDialog}
-      >
-        <div className="formgrid grid">
-          <div className="field col">
-            <label htmlFor="first_name">Adı</label>
-            <InputText
-              id="name"
-              value={customer.first_name}
-              onChange={(e) => onInputChange(e, 'first_name')}
-              required
-              autoFocus
-              className={classNames({ 'p-invalid': submitted && !customer.first_name })}
-            />
-            {submitted && !customer.first_name && <small className="p-error">Zorunlu alan</small>}
-          </div>
-          <div className="field col">
-            <label htmlFor="last_name">Soyadı</label>
-            <InputText
-              id="name"
-              value={customer.last_name}
-              onChange={(e) => onInputChange(e, 'last_name')}
-              autoFocus
-            />
-          </div>
-        </div>
-        <div className="formgrid grid">
-          <div className="field col">
-            <label htmlFor="phone">Telefon</label>
-            <InputMask
-              id="phone"
-              mask="9999999999"
-              value={customer.phone}
-              //placeholder="(999) 999-9999"
-              onChange={(e) => onInputChange(e, 'phone')}
-            />
-          </div>
-          <div className="field col">
-            <label htmlFor="quantity">TC No</label>
-            <InputMask
-              id="tc_no"
-              mask="9999999999999"
-              value={customer.tc_no}
-              //placeholder="9999999999999"
-              onChange={(e) => onInputChange(e, 'tc_no')}
-            />
-          </div>
-        </div>
-        <div className="field">
-          <label htmlFor="email">E-Posta</label>
-          <InputText
-            id="email"
-            value={customer.email}
-            onChange={(e) => onInputChange(e, 'email')}
-          />
-        </div>
-      </Dialog>
-
-      <Dialog
-        visible={deleteCustomersDialog}
-        style={{ width: '450px' }}
-        //header="Confirm"
-        modal
-        footer={deleteCustomersDialogFooter}
-        onHide={hideDeleteCustomersDialog}
-      >
-        <div className="confirmation-content">
-          <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {customer && <span>Silmek istediğinize emin misiniz?</span>}
-        </div>
-      </Dialog>
-    </div>
+          <Dialog
+            visible={deleteCustomersDialog}
+            style={{ width: '450px' }}
+            //header="Confirm"
+            modal
+            footer={deleteCustomersDialogFooter}
+            onHide={hideDeleteCustomersDialog}
+          >
+            <div className="confirmation-content">
+              <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+              {customer && <span>Silmek istediğinize emin misiniz?</span>}
+            </div>
+          </Dialog>
+        </CCol>
+      </CRow>
+    </>
   )
 }
 

@@ -11,6 +11,7 @@ import { sygnet } from 'src/assets/brand/sygnet'
 
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
+import { freeSet } from '@coreui/icons'
 
 // sidebar nav config
 import navigation from '../_nav'
@@ -22,6 +23,7 @@ const AppSidebar = () => {
 
   return (
     <CSidebar
+      size="sm"
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}
@@ -30,8 +32,9 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarBrand className="d-none d-md-flex" to="/">
-        <CIcon className="sidebar-brand-full" icon={logoNegative} height={35} />
-        <CIcon className="sidebar-brand-narrow" icon={sygnet} height={35} />
+        {/* <CIcon className="sidebar-brand-full" icon={logoNegative} height={35} />
+        <CIcon className="sidebar-brand-narrow" icon={sygnet} height={35} /> */}
+        <CIcon icon={freeSet.cilFire} size="xxl" />
       </CSidebarBrand>
       <CSidebarNav>
         <SimpleBar>
